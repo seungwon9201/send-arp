@@ -28,6 +28,25 @@ Mac MyMac(const char* dev) {					//I using copilot to get my mac address functio
     return Mac((uint8_t*)ifr.ifr_hwaddr.sa_data);
 }
 
+Mac TaMac(const char* dev) {
+	EtharpPacket packet;
+	
+	packet.eth_.dmac_ = Mac("ff:ff:ff:ff:ff:ff");
+    packet.eth_.smac_ = myMac;
+    packet.eth_.type_ = htons(EthHdr::Arp);
+
+    packet.arp_.hrd_ = htons(ArpHdr::ETHER);
+    packet.arp_.pro_ = htons(EthHdr::Ip4);
+    packet.arp_.hln_ = Mac::Size;
+    packet.arp_.pln_ = Ip::Size;
+    packet.arp_.op_ = htons(ArpHdr::Request);
+    packet.arp_.smac_ = myMac;
+    packet.arp_.sip_ = htonl(myIp);
+    packet.arp_.tmac_ = Mac("00:00:00:00:00:00");
+    packet.arp_.tip_ = htonl(targetIp);
+
+}
+
 int main(int argc, char* argv[]) {
 	if (argc < 4 || ((argc - 2) % 2 != 0)) {
 		usage();
@@ -50,7 +69,7 @@ int main(int argc, char* argv[]) {
 		EthArpPacket packet;
 
 		packet.eth_.dmac_ = Mac("9C:B1:50:0E:4F:66");
-		packet.eth_.smac_ = Mac("90:de:80:d5:82:7a");
+		packet.eth_.smac_ = myMac;
 		packet.eth_.type_ = htons(EthHdr::Arp);
 
 		packet.arp_.hrd_ = htons(ArpHdr::ETHER);
