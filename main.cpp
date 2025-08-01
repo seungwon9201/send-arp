@@ -29,10 +29,10 @@ Mac MyMac(const char* dev) {					//I using copilot to get my mac address functio
     return Mac((uint8_t*)ifr.ifr_hwaddr.sa_data);
 }
 
-Mac TaMac(pcap_t* pcap, const char* dev, Mac Mymac, Ip senderIp, Ip targetIp) {
+Mac TaMac(pcap_t* pcap, const char* dev, Mac Mymac, Ip senderIp, Ip targetIp) { //request
 	EthArpPacket packet;
 	packet.eth_.dmac_ = Mac("FF:FF:FF:FF:FF:FF");
-	packet.eth_.smac_ = Mymac;
+	packet.eth_.smac_ = Mymac; 
 	packet.eth_.type_ = htons(EthHdr::Arp);
 
 	packet.arp_.hrd_ = htons(ArpHdr::ETHER);
@@ -50,17 +50,16 @@ Mac TaMac(pcap_t* pcap, const char* dev, Mac Mymac, Ip senderIp, Ip targetIp) {
 			fprintf(stderr, "pcpa_sendpacket return %d error=%s\n", res, pcap_geterr(pcap));
 		}
 
-	while (true) {
+	while (true) { //reply
 		struct pcap_pkthdr* header;
 		const u_char* reply;
 		int res = pcap_next_ex(pcap, &header, &reply);
 		if (res == 0) continue;
-		if (res == -1 || res == -2) break;
+		if (res == -1) break;
 
 		EthArpPacket* recvPacket = (EthArpPacket*)reply;
 
 		if (recvPacket->eth_.type_ != htons(EthHdr::Arp)) continue;
-
 		if (recvPacket->arp_.op_ != htons(ArpHdr::Reply)) continue;
 		if (recvPacket->arp_.sip_ != htonl(senderIp)) continue;
 		if (recvPacket->arp_.tip_ != htonl(targetIp)) continue;
