@@ -62,8 +62,8 @@ Mac TaMac(pcap_t* pcap, const char* dev, Mac Mymac, Ip senderIp, Ip targetIp) {
 		if (recvPacket->eth_.type_ != htons(EthHdr::Arp)) continue;
 
 		if (recvPacket->arp_.op_ != htons(ArpHdr::Reply)) continue;
-		if (recvPacket->arp_.sip_ != htonl(targetIp)) continue;
-		if (recvPacket->arp_.tip_ != htonl(senderIp)) continue;
+		if (recvPacket->arp_.sip_ != htonl(senderIp)) continue;
+		if (recvPacket->arp_.tip_ != htonl(targetIp)) continue;
 
 		return recvPacket->arp_.smac_;
 
